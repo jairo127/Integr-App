@@ -1,0 +1,24 @@
+<div class="comment-form">
+    <button class="btn btn-primary" *ngIf="!displayForm" (click)="displayForm = true">Nouveau commentaire</button>
+    <form *ngIf="displayForm" #commentForm="ngForm">
+        <div class="form-group">
+            <label for="inputAuteur">Auteur</label>
+            <input type="text" class="form-control" placeholder="Auteur" id="inputAuteur" [(ngModel)]="comment.auteur" name="auteur"/>
+        </div>
+        <div class="form-group">
+            <label for="inputTitre">Titre</label>
+            <input type="text" class="form-control" placeholder="Titre" id="inputTitre" [(ngModel)]="comment.titre" name="titre"/>
+        </div>
+        <div class="form-group">
+            <label for="inputContenu">Contenu</label>
+            <textarea class="form-control" id="inputContenu" rows="4" [(ngModel)]="comment.contenu" name="contenu"></textarea>
+        </div>
+        <div class="form-buttons">
+            <button class="btn btn-primary" (click)="sendComment()">Envoyer</button>
+            <button class="btn btn-danger" (click)="displayForm = false">Annuler</button>
+        </div>
+    </form>
+    {{comment.auteur}}
+    {{comment.titre}}
+    {{comment.contenu}}
+</div>
