@@ -1,4 +1,5 @@
 from flask import Flask, jsonify, request
+from flask_cors import CORS
 from datetime import datetime
 
 # apispec via OpenAPI
@@ -9,6 +10,7 @@ from marshmallow import Schema, fields
 from flask_swagger_ui import get_swaggerui_blueprint
 
 app = Flask(__name__)
+CORS(app)
 
 commentaires = {}
 
@@ -96,6 +98,11 @@ def post():
           type: string
           required: false
           description: Titre du commentaire
+        - name: contenu
+          in: json body
+          type: string
+          required: false
+          description: Contenu du commentaire
       responses:
         '201':
           description: Requête valide
@@ -279,19 +286,22 @@ app.register_blueprint(swagger_ui_blueprint, url_prefix=SWAGGER_URL)
 
 def parse_commentaire(commentaires, json_inp):
 
-    keys = ["auteur", "dateCreation", "id", "titre"]
+    keys = ["auteur", "dateCreation", "id", "titre", "contenu"]
 
     for key in json_inp.keys():
         if key not in keys:
             return 400, None
 
-    data = {"auteur": "Anonyme", "dateCreation": "", "id": "", "titre": "Inconnu"}
+    data = {"auteur": "Anonyme", "dateCreation": "", "id": "", "titre": "Inconnu", "contenu": "(Vide)"}
 
     if "auteur" in json_inp.keys():
         data["auteur"] = json_inp["auteur"]  # ajouter #str() ici ???
 
     if "titre" in json_inp.keys():
         data["titre"] = json_inp["titre"]
+
+    if "contenu" in json_inp.keys():
+        data["contenu"] = json_inp["contenu"]
 
     if "id" in json_inp.keys():  # Ne vérifie pas si l'id est déjà dans commentaires
         if type(json_inp["id"]) != int:

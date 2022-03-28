@@ -5,7 +5,8 @@ import { CommentBean } from './../../beans/comment';
 @Component({
   selector: 'app-comment-form',
   templateUrl: './comment-form.component.html',
-  styleUrls: ['./comment-form.component.scss']
+  styleUrls: ['./comment-form.component.scss'],
+  providers: [ConfigService]
 })
 export class CommentFormComponent implements OnInit {
 
@@ -16,13 +17,14 @@ export class CommentFormComponent implements OnInit {
   constructor(private config: ConfigService) { }
 
   ngOnInit(): void {
-    this.displayForm = true; // a mettre à false
+    this.displayForm = false;
     this.comment = new CommentBean(0, "", "", "", null);
   }
 
   sendComment() {
-    this.config.insertComment(this.comment);
-    this.displayForm = false;
+    this.config.insertComment(this.comment).subscribe(data => {
+      this.displayForm = false;
+    });
   }
 
 }
