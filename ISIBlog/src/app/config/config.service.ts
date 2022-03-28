@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { CommentBean } from 'src/beans/comment';
+import { CommentBean, comments } from 'src/beans/comment';
 
 class CommentHttp {
     auteur: string;
@@ -19,13 +19,28 @@ export class ConfigService {
 
     constructor(private http: HttpClient) { }
 
+    clearComments() {
+        while (comments.length > 0) {
+            comments.pop();
+        }
+    }
+
     insertComment(comment: CommentBean): Observable<any> {
         const header = {'Content-Type': 'application/json'};
         const body = JSON.stringify(new CommentHttp(comment.auteur, comment.titre, comment.contenu))
         return this.http.post("http://localhost:5000/", body, { headers: header });
     }
 
-    getComments(): Observable<any> {
-        return this.http.get("http://localhost:5000/");
+    getComments() {
+        return this.http.get<CommentBean[]>("http://localhost:5000/").subscribe(data => {
+            data.forEach(item => {
+                this.clearComments();
+                comments.push(new CommentBean(item.id, item.auteur, item.titre, item.contenu, item.dateCreation));
+            });
+        });
+    }
+
+    deleteComment(id: number): Observable<any> {
+        return this.http.delete("http://localhost:5000/"+id);
     }
 }

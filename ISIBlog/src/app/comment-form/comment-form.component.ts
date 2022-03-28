@@ -18,11 +18,12 @@ export class CommentFormComponent implements OnInit {
 
   ngOnInit(): void {
     this.displayForm = false;
-    this.comment = new CommentBean(0, "", "", "", null);
+    this.comment = new CommentBean(0, "", "", "", "");
   }
 
   sendComment() {
     this.config.insertComment(this.comment).subscribe(data => {
+      this.config.getComments();
       this.displayForm = false;
     });
   }

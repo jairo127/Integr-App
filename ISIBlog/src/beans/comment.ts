@@ -3,9 +3,9 @@ export class CommentBean {
     public auteur: string;
     public titre: string;
     public contenu: string;
-    public dateCreation: Date;
+    public dateCreation: string;
 
-    constructor(id: number, auteur: string, titre: string, contenu: string, dateCreation: Date) {
+    constructor(id: number, auteur: string, titre: string, contenu: string, dateCreation: string) {
         this.id = id;
         this.auteur = auteur;
         this.titre = titre;
@@ -13,3 +13,5 @@ export class CommentBean {
         this.dateCreation = dateCreation;
     }
 }
+
+export var comments: CommentBean[] = new Array<CommentBean>();

@@ -1,1 +1,10 @@
-<p>comment-single works!</p>
+<div class="card">
+    <div class="card-body">
+        <h5 class="card-title">{{comment.titre}}</h5>
+        <blockquote class="blockquote mb-0">
+            <p>{{comment.contenu}}</p>
+            <footer class="blockquote-footer">{{comment.auteur}} le {{comment.dateCreation}}</footer>
+        </blockquote>
+        <a class="link-danger" (click)="deleteComment()">delete</a>
+    </div>
+</div>
