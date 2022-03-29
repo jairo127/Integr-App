@@ -24,4 +24,6 @@ INSERT INTO dbisiblog.comments VALUES(4, 'Oprah Winfrey', 'Oprah Winfrey quote',
 INSERT INTO dbisiblog.comments VALUES(5, 'James Cameron', 'James Cameron quote', 'If you set your goals ridiculously high and it''s a failure, you will fail above everyone else''s success.', date_format(sysdate(), '%Y/%m/%d %T'));
 INSERT INTO dbisiblog.comments VALUES(6, 'John Lennon', 'John Lennon quote', 'Life is what happens when you''re busy making other plans.', date_format(sysdate(), '%Y/%m/%d %T'));
 
+COMMIT;
+
 SELECT * FROM dbisiblog.comments;

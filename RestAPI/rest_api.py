@@ -9,36 +9,10 @@ from apispec_webframeworks.flask import FlaskPlugin
 from marshmallow import Schema, fields
 from flask_swagger_ui import get_swaggerui_blueprint
 
+import db_connection as db
+
 app = Flask(__name__)
 CORS(app)
-
-commentaires = {\
-  0: {
-    "id": 0,
-    "auteur": "foo",
-    "titre": "bar",
-    "contenu": """Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-    Fusce varius nibh mi, ac fringilla arcu facilisis sit amet.
-    Praesent cursus urna tempus volutpat ornare.
-    Duis erat magna, laoreet id metus eget, dapibus rutrum felis.
-    Mauris ut quam sagittis, faucibus sem id, faucibus est.
-    Fusce rhoncus pharetra arcu, quis rhoncus lectus pulvinar vel.""",
-    "dateCreation": "2020/07/16 12:30:00"
-  },
-  1: {
-    "id": 1,
-    "auteur": "foobar",
-    "titre": "barfoo",
-    "contenu": """Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-    Fusce varius nibh mi, ac fringilla arcu facilisis sit amet.
-    Praesent cursus urna tempus volutpat ornare.
-    Duis erat magna, laoreet id metus eget, dapibus rutrum felis.
-    Mauris ut quam sagittis, faucibus sem id, faucibus est.
-    Fusce rhoncus pharetra arcu, quis rhoncus lectus pulvinar vel.""",
-    "dateCreation": "2022/07/18 19:30:17"
-  }
-}
-
 
 @app.route("/", methods=["GET"])
 def get():
@@ -53,48 +27,8 @@ def get():
             application/json:
               schema: CommentaireList
     """
+    commentaires = db.get_all_comments(connection)
     return jsonify([elem for elem in commentaires.values()]), 200
-
-
-@app.route("/<a_id>", methods=["GET"])
-def get_arg(a_id):
-    """
-    ---
-    get:
-      description: Permet d'obtenir un commentaire en particulier avec son ID.
-      parameters:
-        - name: a_id
-          in: uri
-          type: integer
-          required: true
-          description: ID du commentaire à obtenir.
-      responses:
-        '200':
-          description: Requête valide
-          content:
-            application/json:
-              schema: Commentaire
-        '400':
-          description: Requête non valide, Mal formatté
-          content:
-            application/json:
-              schema: Reponse
-        '404':
-          description: Requête non valide, ID inexistant
-          content:
-            application/json:
-              schema: Reponse
-    """
-    try:
-        val = int(a_id)
-    except:
-        return "Bad id format. Expected integer.", 400
-
-    if val in commentaires:
-        return jsonify(commentaires[val])
-    else:
-        return {"response": "Id does not exist."}, 404
-
 
 @app.route("/", methods=["POST"])
 def post():
@@ -141,77 +75,18 @@ def post():
               schema: Reponse
     """
     inp_data = request.get_json(force=True)
-    code, data = parse_commentaire(commentaires, inp_data)
+    code, data = parse_commentaire(inp_data)
 
     if code == 200:
-        if data["id"] in commentaires:
-            return {"response": "Id already exists"}, 400
+      inserted = db.insert_comment(connection, data)
 
-        commentaires[data["id"]] = data
-
+      if inserted:
         return {"response": f"Comment # {data['id']} was created"}, 201
+      else:
+        return {"response": "Id already exists"}, 400
 
     else:
         return {"response": "Invalid comment"}, 400
-
-
-@app.route("/", methods=["PUT"])
-def update():
-    """
-    ---
-    put:
-      description: Permet de mettre un jour un commentaire.
-      parameters:
-        - name: auteur
-          in: json body
-          type: string
-          required: false
-          description: Auteur du commentaire
-        - name: dateCreation
-          in: json body
-          type: date
-          required: false
-          description: Date du commentaire (ex. 2022/03/01 10:00:00)
-        - name: id
-          in: json body
-          type: int
-          required: true
-          description: ID du commentaire à mettre à jour
-        - name: titre
-          in: json body
-          type: string
-          required: false
-          description: Titre du commentaire
-      responses:
-        '200':
-          description: Requête valide
-          content:
-            application/json:
-              schema: Reponse
-        '400':
-          description: Requête non valide, champs invalides, date mal formatté, ID inconnu...
-          content:
-            application/json:
-              schema: Reponse
-    """
-    inp_data = request.get_json(force=True)
-    code, data = parse_commentaire(commentaires, inp_data)  # vérif commentaire
-
-    if code == 200:
-        if "id" in inp_data:
-            if inp_data["id"] not in commentaires:
-                return "Id does not exists", 404
-            else:
-                commentaires[inp_data["id"]] = data
-                return f"Comment # {inp_data['id']} was updated.", 200
-        else:
-            return (
-                "No id specified",
-                400,
-            )  # choix de renvoyer une erreur au lieu d'insérer
-    else:
-        return "Invalid comment", 400
-
 
 @app.route("/<a_id>", methods=["DELETE"])
 def delete_arg(a_id):
@@ -247,18 +122,18 @@ def delete_arg(a_id):
     except:
         return {"response": "Bad Id format"}, 400
 
-    if val in commentaires:
-        del commentaires[val]
-        return {"response": f"Comment # {val} was deleted."}, 200
-    else:
-        return {"response": "Id does not exist."}, 404
+    deleted = db.delete_comment(connection, val)
 
+    if deleted:
+      return {"response": f"Comment # {val} was deleted."}, 200
+    else:
+      return {"response": "Id does not exist."}, 404
 
 ##################################################################################
 # CREATION SWAGGER
 # APISpec
 spec = APISpec(
-    title="TP3 WSDL",
+    title="ISIBlog API",
     version="1.0.0",
     openapi_version="3.0.2",
     plugins=[FlaskPlugin(), MarshmallowPlugin()],
@@ -302,14 +177,14 @@ API_URL = "/swagger.json"
 
 # Call factory function to create our blueprint
 swagger_ui_blueprint = get_swaggerui_blueprint(
-    SWAGGER_URL, API_URL, config={"app_name": "TP3 WSDL"}
+    SWAGGER_URL, API_URL, config={"app_name": "ISIBlog API Documentation"}
 )
 app.register_blueprint(swagger_ui_blueprint, url_prefix=SWAGGER_URL)
 # FIN CREATION SWAGGER
 ##################################################################################
 
 
-def parse_commentaire(commentaires, json_inp):
+def parse_commentaire(json_inp):
 
     keys = ["auteur", "dateCreation", "id", "titre", "contenu"]
 
@@ -333,7 +208,7 @@ def parse_commentaire(commentaires, json_inp):
             return 400, None
         data["id"] = json_inp["id"]
     else:
-        data["id"] = gen_id(commentaires)
+        data["id"] = int(db.get_last_id(connection))
 
     # date manquante
     if "dateCreation" in json_inp:
@@ -348,15 +223,7 @@ def parse_commentaire(commentaires, json_inp):
 
     return 200, data
 
-
-def gen_id(commentaires: dict) -> int:
-    try:
-        max_v = max(commentaires.keys())
-    except:
-        max_v = -1
-    return max_v + 1
-
-
 if __name__ == "__main__":
+    connection = db.mysql_connect()
     app.run()
 

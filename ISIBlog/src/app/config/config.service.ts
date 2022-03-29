@@ -26,6 +26,9 @@ export class ConfigService {
     }
 
     insertComment(comment: CommentBean): Observable<any> {
+        if (comment.auteur == "") comment.auteur = "Anonyme";
+        if (comment.titre == "") comment.titre = "Non défini";
+        if (comment.contenu == "") comment.contenu = "(Vide)";
         const header = {'Content-Type': 'application/json'};
         const body = JSON.stringify(new CommentHttp(comment.auteur, comment.titre, comment.contenu))
         return this.http.post("http://localhost:5000/", body, { headers: header });
