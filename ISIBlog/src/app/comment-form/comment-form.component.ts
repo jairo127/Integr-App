@@ -25,6 +25,9 @@ export class CommentFormComponent implements OnInit {
     this.config.insertComment(this.comment).subscribe(data => {
       this.config.getComments();
       this.displayForm = false;
+      this.comment.auteur = "";
+      this.comment.titre = "";
+      this.comment.contenu = "";
     });
   }
 

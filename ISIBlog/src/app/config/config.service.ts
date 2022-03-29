@@ -33,8 +33,8 @@ export class ConfigService {
 
     getComments() {
         return this.http.get<CommentBean[]>("http://localhost:5000/").subscribe(data => {
+            this.clearComments();
             data.forEach(item => {
-                this.clearComments();
                 comments.push(new CommentBean(item.id, item.auteur, item.titre, item.contenu, item.dateCreation));
             });
         });

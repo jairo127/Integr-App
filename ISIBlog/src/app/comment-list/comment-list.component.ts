@@ -14,6 +14,7 @@ export class CommentListComponent implements OnInit {
 
   ngOnInit(): void {
     this.config.getComments();
+    console.log(comments);
   }
 
   comments(): CommentBean[] {

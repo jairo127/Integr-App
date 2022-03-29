@@ -12,7 +12,32 @@ from flask_swagger_ui import get_swaggerui_blueprint
 app = Flask(__name__)
 CORS(app)
 
-commentaires = {}
+commentaires = {\
+  0: {
+    "id": 0,
+    "auteur": "foo",
+    "titre": "bar",
+    "contenu": """Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+    Fusce varius nibh mi, ac fringilla arcu facilisis sit amet.
+    Praesent cursus urna tempus volutpat ornare.
+    Duis erat magna, laoreet id metus eget, dapibus rutrum felis.
+    Mauris ut quam sagittis, faucibus sem id, faucibus est.
+    Fusce rhoncus pharetra arcu, quis rhoncus lectus pulvinar vel.""",
+    "dateCreation": "2020/07/16 12:30:00"
+  },
+  1: {
+    "id": 1,
+    "auteur": "foobar",
+    "titre": "barfoo",
+    "contenu": """Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+    Fusce varius nibh mi, ac fringilla arcu facilisis sit amet.
+    Praesent cursus urna tempus volutpat ornare.
+    Duis erat magna, laoreet id metus eget, dapibus rutrum felis.
+    Mauris ut quam sagittis, faucibus sem id, faucibus est.
+    Fusce rhoncus pharetra arcu, quis rhoncus lectus pulvinar vel.""",
+    "dateCreation": "2022/07/18 19:30:17"
+  }
+}
 
 
 @app.route("/", methods=["GET"])
@@ -68,7 +93,7 @@ def get_arg(a_id):
     if val in commentaires:
         return jsonify(commentaires[val])
     else:
-        return "Id does not exist.", 404
+        return {"response": "Id does not exist."}, 404
 
 
 @app.route("/", methods=["POST"])
@@ -120,14 +145,14 @@ def post():
 
     if code == 200:
         if data["id"] in commentaires:
-            return "Id already exists", 400
+            return {"response": "Id already exists"}, 400
 
         commentaires[data["id"]] = data
 
-        return f"Comment # {data['id']} was created", 201
+        return {"response": f"Comment # {data['id']} was created"}, 201
 
     else:
-        return "Invalid comment", 400
+        return {"response": "Invalid comment"}, 400
 
 
 @app.route("/", methods=["PUT"])
@@ -220,13 +245,13 @@ def delete_arg(a_id):
     try:
         val = int(a_id)
     except:
-        return "Bad Id format", 400
+        return {"response": "Bad Id format"}, 400
 
     if val in commentaires:
         del commentaires[val]
-        return f"Comment # {val}  was deleted.", 200
+        return {"response": f"Comment # {val} was deleted."}, 200
     else:
-        return "Id does not exist.", 404
+        return {"response": "Id does not exist."}, 404
 
 
 ##################################################################################
